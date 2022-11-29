@@ -11,7 +11,7 @@ defmodule SensorHub.Sensor do
   end
 
   def fields(Ccs811), do: [:eco2, :tvoc]
-  def fields(BMP280), do: [:altitude_m, :pressure_pa, :temperature_c]
+  def fields(BMP280), do: [:altitude_m, :humidity_rh, :pressure_pa, :temperature_c]
   def fields(VCNL4040), do: [:light_lumens]
 
   def read_fn(Ccs811), do: fn -> Ccs811.read_alg_result_data() end
@@ -28,7 +28,7 @@ defmodule SensorHub.Sensor do
     fn reading ->
       case reading do
         {:ok, measurement} ->
-          Map.take(measurement, [:altitude_m, :pressure_pa, :temperature_c])
+          Map.take(measurement, [:altitude_m, :humidity_rh, :pressure_pa, :temperature_c])
 
         _ ->
           %{}
