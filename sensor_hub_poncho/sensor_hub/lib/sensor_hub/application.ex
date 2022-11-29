@@ -35,6 +35,10 @@ defmodule SensorHub.Application do
       # Children for all targets except host
       # Starts a worker by calling: SensorHub.Worker.start_link(arg)
       # {SensorHub.Worker, arg},
+      {BMP280, [i2c_address: 0x77, name: BMP280]},
+      {VCNL4040, %{}}
+
+      # Ccs811.initialize(slave_address: 0x5B) ... not included since this isn't a GenServer
     ]
   end
 
