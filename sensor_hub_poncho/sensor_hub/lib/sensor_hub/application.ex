@@ -5,6 +5,8 @@ defmodule SensorHub.Application do
 
   use Application
 
+  alias SensorHub.Sensor
+
   @impl true
   def start(_type, _args) do
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -35,11 +37,27 @@ defmodule SensorHub.Application do
       # Children for all targets except host
       # Starts a worker by calling: SensorHub.Worker.start_link(arg)
       # {SensorHub.Worker, arg},
-      {BMP280, [i2c_address: 0x77, name: BMP280]},
-      {VCNL4040, %{}}
 
       # Ccs811.initialize(slave_address: 0x5B) ... not included since this isn't a GenServer
+      {BMP280, [i2c_address: 0x77, name: BMP280]},
+      {VCNL4040, %{}},
+      {Finch, name: WeatherTrackerClient},
+      {
+        Publisher,
+        %{
+          sensors: sensors(),
+          weather_tracker_url: weather_tracker_url()
+        }
+      }
     ]
+  end
+
+  defp sensors do
+    [Sensor.new(BMP280), Sensor.new(VCNL4040)]
+  end
+
+  defp weather_tracker_url do
+    Application.get_env(:sensor_hub, :weather_tracker_url)
   end
 
   def target() do
