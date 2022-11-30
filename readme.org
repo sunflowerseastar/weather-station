@@ -1,0 +1,64 @@
+* Weather Station
+
+This is an Elixir [[https://www.nerves-project.org/][Nerves]] project running on a Raspberry Pi. It is from the book [[https://pragprog.com/titles/passweather/build-a-weather-station-with-elixir-and-nerves/][Build a Weather Station with Elixir and Nerves:
+Visualize Your Sensor Data with Phoenix and Grafana]], by Alexander Koutmos, Bruce A. Tate, and Frank Hunleth.
+
+The Pi collects data via sensors and POSTs it to a [[https://www.phoenixframework.org/][Phoenix]] server. Data is visualized with [[https://grafana.com/][Grafana]].
+
+#+begin_src sh
+# docker
+cd weather_tracker
+docker-compose up # visit localhost:3000 admin/admin
+
+# phoenix (separate terminal)
+cd weather_tracker
+mix phx.server # API on localhost:4000
+
+# to inspect/debug the device
+ssh hub.local
+RingLogger.attach()
+exit()
+#+end_src
+
+The devices I have are slightly different from the ones used in the book:
+
+| device               | mine     | book     |
+|----------------------+----------+----------|
+| ambient light sensor | VCNL4040 | VEML6030 |
+| atmospheric sensor   | BME280   | BME680   |
+| air quality          | CCS811   | SGP30    |
+
+** Interfacing with the Pi
+
+Getting values from sensors:
+
+#+begin_src sh
+ssh hub.local
+
+VCNL4040.start_link()
+VCNL4040.get_measurement()
+
+alias SensorHub.Sensor
+gas = Sensor.new(Ccs811)
+environment = Sensor.new(BMP280)
+Sensor.measure(gas)
+Sensor.measure(environment)
+#+end_src
+
+Update the Pi:
+
+#+begin_src sh
+export MIX_TARGET=rpi4
+cd sensor_hub
+mix deps.get
+mix firmware
+mix upload hub.local
+
+mix burn # for when it's hard-wired, not ssh
+#+end_src
+
+** Components
+
+CCS811 air quality / BME280 atmospheric sensor -  https://www.sparkfun.com/products/14348
+
+VEML6030 light sensor - https://www.sparkfun.com/products/15436
